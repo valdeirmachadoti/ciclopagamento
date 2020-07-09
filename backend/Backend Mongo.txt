@@ -1,0 +1,100 @@
+INICIANDO PROJETO BACKEND MONGO
+***************************************************************
+=> Criando o package.json = npm init -y
+=> Dependencia producao: npm i --save express@4.14.0 mongoose@4.7.0 body-parser@1.15.2 lodash@4.17.4 express-query-int@1.0.1 node-restful@0.2.5 mongoose-paginate@5.0.3 pm2@2.1.5  
+=> Dependecnia desenvolvimentos: npm i --save-dev nodemon@1.11.0
+* rm -rf node_modules = Remove um arquivo
+
+***************************************************************
+CONFIGURANDO O SERVIDOR COM O EXPRESS
+=> arquivo loader.js(
+   require('./config/server')
+   require('./config/database'))
+=> arquivo server.js(
+   const port = 3003
+   const bodyParser = require("body-parser")
+   const express = require('express')
+   const server = express()
+   server.use(bodyParser.urlencoded({ extended: true}))
+   server.use(bodyParser.json())
+   server.listen(port, function(){
+    console.log(`BACKEND executando na porta ${port}`)
+}))
+*****************************************************************
+INICIANDO O SERVIDOR
+=> npm run dev
+*******************************************************************
+CONEXAO COM O BD - MONGODB
+=> arquivo database.js (
+   const mongoose = require('mongoose')
+   mongoose.Promise = global.Promise //Usando as promisses do node
+   module.exports = mongoose.connect('mongodb://localhost/mymoney')
+)
+****************************************************************
+MAPEAMENTO OBJETO DOCUMENTO - ODM
+=> (TABELAS)
+const restful = require('node-restful')
+const mongoose = restful.mongoose
+
+const creditoSchema = new mongoose.Schema({
+    nome: { type: String, require: true},
+    valor: { type: Number, min: 0, require: true}
+}) 
+
+const debitoSchema = new mongoose.Schema({
+    nome: { type: String, require: true},
+    valor: { type: Number, min: 0, require: true},
+    status: { type: String, require: false, uppercase: true,
+        enum: ['PAGO', 'PENDENTE', 'AGENDADO'] }
+}) 
+
+const cicloPagamentoSchema = new mongoose.Schema({
+    nome: { type: String, require: true},
+    mes: { type: Number, min: 1, max: 12, require: true},
+    ano: { type: Number, min: 1970, max: 2100, require: true},
+    credito: [creditoSchema],
+    debito:[debitoSchema]
+})
+
+module.exports = restful.model('CicloPagamento', cicloPagamentoSchema)
+*************************************************************************
+CRIANDO OS SERVICOS RESTFULL
+const CicloPagamento = require('./cicloPagamento')
+
+CicloPagamento.methods(['get', 'post', 'delete', 'put', 'dispath'])
+CicloPagamento.updateOptions({new: true, runValidators: true}) // For�a as atualiza��es
+
+module.exports = CicloPagamento
+
+***************************************************************************
+CONFIGURANDO AS ROTAS
+=>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+****************************************************************
+INSERT MANUAL
+nome:Janeiro/20 
+mes:1
+ano:2020
+creditos[0][nome]:Salario Contador
+creditos[0][valor]:3500
+creditos[1][nome]:Pagamento Boletos
+creditos[1][valor]:5000
+debitos[0][nome]:Telefone
+debitos[0][valor]:200
+debitos[0][status]:PAGO
+debitos[1][nome]:CEB
+debitos[1][valor]:150
+debitos[1][status]:PENDENTE
